@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.pztsblog.blogsend.mapper.BlogCommentMapper">
+
+    <insert id="insertComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO blog_comment (article_id, user_id, content, image_url, create_time)
+        VALUES (#{articleId}, #{userId}, #{content}, #{imageUrl}, NOW())
+    </insert>
+
+    <select id="selectByArticleId" resultType="org.pztsblog.blogsend.entity.BlogComment">
+        SELECT * FROM blog_comment
+        WHERE article_id = #{articleId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectCommentsWithUser" resultType="org.pztsblog.blogsend.vo.CommentVO">
+        SELECT
+            c.*,               u.nickname,        u.username         FROM blog_comment c
+                                                                              LEFT JOIN sys_user u ON c.user_id = u.id
+        WHERE c.article_id = #{articleId}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <delete id="deleteComment">
+        DELETE FROM blog_comment
+        WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+</mapper>

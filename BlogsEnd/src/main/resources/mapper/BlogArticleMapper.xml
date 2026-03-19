@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.pztsblog.blogsend.mapper.BlogArticleMapper">
+
+    <insert id="insertArticle" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO blog_article (user_id, category_id, title, content, cover_image, status, view_count, create_time, update_time)
+        VALUES (#{userId}, #{categoryId}, #{title}, #{content}, #{coverImage}, #{status}, 0, NOW(), NOW())
+    </insert>
+
+    <select id="selectArticleList" resultType="org.pztsblog.blogsend.entity.BlogArticle">
+        SELECT * FROM blog_article
+        <where>
+            <if test="categoryId != null">
+                category_id = #{categoryId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectArticleById" resultType="org.pztsblog.blogsend.entity.BlogArticle">
+        SELECT * FROM blog_article WHERE id = #{id}
+    </select>
+
+    <update id="incrementViewCount">
+        UPDATE blog_article SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+    <update id="updateArticle">
+        UPDATE blog_article
+        <set>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteArticleById">
+        DELETE FROM blog_article WHERE id = #{id}
+    </delete>
+
+</mapper>

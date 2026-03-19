@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.pztsblog.blogsend.mapper.SysUserMapper">
+
+    <select id="selectUserById" resultType="org.pztsblog.blogsend.entity.SysUser">
+        SELECT * FROM sys_user WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultType="org.pztsblog.blogsend.entity.SysUser">
+        SELECT * FROM sys_user WHERE username = #{username}
+    </select>
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (username, password, nickname, create_time, update_time)
+        VALUES (#{username}, #{password}, #{nickname}, NOW(), NOW())
+    </insert>
+
+</mapper>
