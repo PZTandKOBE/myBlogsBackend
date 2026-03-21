@@ -1,17 +1,28 @@
 spring:
   application:
     name: BlogsEnd
+  servlet:
+    multipart:
+      max-file-size: 10MB       # 单个文件最大允许 10MB
+      max-request-size: 100MB   # 单次请求总共最大允许 100MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # ??? blog_db ???????????
     url: jdbc:mysql://localhost:3306/blog_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
-    password:  # <-- ???????
+    password:
 
 server:
-  port: 8081 # ?????????
+  port: 8081
 
 mybatis:
-  mapper-locations: classpath:mapper/*.xml # ?? MyBatis ????? SQL ????
+  mapper-locations: classpath:mapper/*.xml
   configuration:
-    map-underscore-to-camel-case: true # ?????????? (????? create_time ????? Java ?? createTime)
+    map-underscore-to-camel-case: true
+
+    # 腾讯云 COS 配置
+tencent:
+    cos:
+        secret-id: ${TENCENT_SECRET_ID}
+        secret-key: ${TENCENT_SECRET_KEY}
+        region: ap-guangzhou
+        bucket-name: blogs-photos-1364382384

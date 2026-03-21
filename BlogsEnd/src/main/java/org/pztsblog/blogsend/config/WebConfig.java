@@ -16,12 +16,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/api/**") // 拦截所有 /api 开头的请求
-                .excludePathPatterns(       // 排除以下白名单（不需要登录就能访问的接口）
+                .excludePathPatterns(
                         "/api/auth/login",
                         "/api/auth/register",
-                        "/api/articles/list",  // 获取文章列表
-                        "/api/articles/{id}",  // 获取文章详情
-                        "/api/comments/article/**" // 获取文章的评论列表
+                        "/api/articles/list",
+                        "/api/articles/{id}",
+                        "/api/comments/article/**",
+                        "/api/music/list"
                 );
     }
 }
