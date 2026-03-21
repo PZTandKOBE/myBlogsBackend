@@ -31,6 +31,9 @@
         <set>
             <if test="categoryId != null">category_id = #{categoryId},</if>
             <if test="title != null and title != ''">title = #{title},</if>
+            <if test="content != null and content != ''">content = #{content},</if>
+            <if test="coverImage != null and coverImage != ''">cover_image = #{coverImage},</if>
+            <if test="status != null">status = #{status},</if>
             update_time = NOW()
         </set>
         WHERE id = #{id}
