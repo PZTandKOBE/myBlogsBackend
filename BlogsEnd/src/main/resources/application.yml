@@ -30,4 +30,4 @@ tencent:
       # RAG 微服务配置
 rag:
     service:
-    url: http://121.37.230.81/api/v1/embed
+      url: http://121.37.230.81/api/v1/embed
