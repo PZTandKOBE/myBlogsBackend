@@ -5,25 +5,25 @@ import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.http.HttpProtocol;
+import com.qcloud.cos.model.COSObjectSummary;
+import com.qcloud.cos.model.ListObjectsRequest;
+import com.qcloud.cos.model.ObjectListing;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.region.Region;
 import org.pztsblog.blogsend.common.Result;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
 public class FileUploadController {
 
-    // 从 application.yml 中自动读取配置
     @Value("${tencent.cos.secret-id}")
     private String secretId;
 
@@ -36,6 +36,9 @@ public class FileUploadController {
     @Value("${tencent.cos.bucket-name}")
     private String bucketName;
 
+    /**
+     * 图片上传接口
+     */
     @PostMapping
     public Result<String> upload(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -46,48 +49,85 @@ public class FileUploadController {
         File localFile = null;
 
         try {
-            // 1. 初始化用户身份信息 (SecretId, SecretKey)
             COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
-            // 2. 设置 bucket 的地域
             Region regionObj = new Region(region);
             ClientConfig clientConfig = new ClientConfig(regionObj);
-            // 建议使用 https 协议
             clientConfig.setHttpProtocol(HttpProtocol.https);
-            // 3. 生成 cos 客户端
             cosClient = new COSClient(cred, clientConfig);
 
-            // 4. 获取文件后缀并生成全新文件名
             String originalFilename = file.getOriginalFilename();
             String extension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
             String newFileName = UUID.randomUUID().toString() + extension;
-
-            // 我们把图片统一放到 COS 里的 "images/" 目录下
             String key = "images/" + newFileName;
 
-            // 5. 将前端传来的 MultipartFile 临时转存为本地文件（COS SDK 要求传 File）
             localFile = File.createTempFile("temp", extension);
             file.transferTo(localFile);
 
-            // 6. 执行上传到腾讯云！
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, localFile);
             cosClient.putObject(putObjectRequest);
 
-            // 7. 拼装出腾讯云 CDN 的真实访问网址
             String url = "https://" + bucketName + ".cos." + region + ".myqcloud.com/" + key;
-
             return Result.success(url);
 
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(500, "文件上传 COS 失败：" + e.getMessage());
         } finally {
-            // 8. 无论成功失败，一定要清理临时文件并关闭客户端，防止内存泄漏
             if (localFile != null && localFile.exists()) {
                 localFile.delete();
             }
+            if (cosClient != null) {
+                cosClient.shutdown();
+            }
+        }
+    }
+
+    /**
+     * 新增：获取云端图片列表接口
+     */
+    @GetMapping("/images")
+    public Result<List<String>> getImageList() {
+        COSClient cosClient = null;
+        List<String> imageUrls = new ArrayList<>();
+
+        try {
+            // 1. 初始化 COS 客户端
+            COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
+            Region regionObj = new Region(region);
+            ClientConfig clientConfig = new ClientConfig(regionObj);
+            clientConfig.setHttpProtocol(HttpProtocol.https);
+            cosClient = new COSClient(cred, clientConfig);
+
+            // 2. 构造查询请求，指定 bucket 和目录前缀
+            ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
+            listObjectsRequest.setBucketName(bucketName);
+            listObjectsRequest.setPrefix("images/"); // 只扫描 images 目录
+            listObjectsRequest.setMaxKeys(1000); // 设置单次拉取的最大数量
+
+            // 3. 执行查询
+            ObjectListing objectListing = cosClient.listObjects(listObjectsRequest);
+            List<COSObjectSummary> objectSummaries = objectListing.getObjectSummaries();
+
+            // 4. 遍历提取对象键 (Key)，并拼装成完整的 CDN 链接
+            for (COSObjectSummary cosObjectSummary : objectSummaries) {
+                String key = cosObjectSummary.getKey();
+                // 排除掉 "images/" 目录本身这条记录
+                if (!key.equals("images/")) {
+                    String url = "https://" + bucketName + ".cos." + region + ".myqcloud.com/" + key;
+                    imageUrls.add(url);
+                }
+            }
+
+            return Result.success(imageUrls);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(500, "获取图片列表失败：" + e.getMessage());
+        } finally {
+            // 别忘了关闭客户端
             if (cosClient != null) {
                 cosClient.shutdown();
             }

@@ -7,7 +7,8 @@ public interface BlogArticleService {
     // 发布或保存文章
     void publishArticle(BlogArticle article);
 
-    PageInfo<BlogArticle> getArticleList(Integer categoryId, int pageNum, int pageSize);
+    // 🌟 修改点：增加 keyword 参数
+    PageInfo<BlogArticle> getArticleList(Integer categoryId, String keyword, int pageNum, int pageSize);
 
     BlogArticle getArticleDetail(Long id);
 

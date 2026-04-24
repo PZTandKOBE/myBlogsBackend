@@ -10,7 +10,9 @@ import java.util.List;
 public interface BlogArticleMapper {
     // 插入一篇文章
     int insertArticle(BlogArticle article);
-    List<BlogArticle> selectArticleList();
+
+    // 🌟 修改点：将 categoryId 和 keyword 合并到一个查询方法中
+    List<BlogArticle> selectArticleList(@Param("categoryId") Integer categoryId, @Param("keyword") String keyword);
 
     // 根据 ID 查询文章
     BlogArticle selectArticleById(Long id);
@@ -23,6 +25,4 @@ public interface BlogArticleMapper {
 
     // 根据 ID 删除文章
     int deleteArticleById(Long id);
-
-    List<BlogArticle> selectArticleList(@Param("categoryId") Integer categoryId);
 }

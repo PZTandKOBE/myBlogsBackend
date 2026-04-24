@@ -14,6 +14,9 @@
             <if test="categoryId != null">
                 category_id = #{categoryId}
             </if>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
         </where>
         ORDER BY create_time DESC
     </select>
