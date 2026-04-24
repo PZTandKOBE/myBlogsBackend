@@ -28,6 +28,6 @@ tencent:
         bucket-name: blogs-photos-1364382384
 
       # RAG 微服务配置
-        rag:
-          service:
-            url: http://127.0.0.1:8000/api/v1/embed
+rag:
+    service:
+    url: http://121.37.230.81/api/v1/embed
